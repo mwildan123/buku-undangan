@@ -1,0 +1,199 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="success">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/" color="light"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Scan Buku</ion-title>
+    @if (state === 'result') {
+      <ion-buttons slot="end">
+        <ion-button fill="clear" color="light" (click)="reset()">
+          <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+  @if (state === 'scanning') {
+    <ion-progress-bar [value]="progressValue" color="light" type="determinate"></ion-progress-bar>
+  }
+</ion-header>
+
+<ion-content>
+
+  <!-- Hidden file input -->
+  <input type="file" id="cameraInput" accept="image/*" style="display:none"
+    (change)="onFileSelected($event)">
+
+  <!-- STATE: IDLE -->
+  @if (state === 'idle') {
+    <div class="idle-screen">
+      <div class="scan-illustration">
+        <div class="scan-book">📖</div>
+        <div class="scan-arrow">→</div>
+        <div class="scan-phone">📱</div>
+      </div>
+      <h2>Pindai Buku Catatan</h2>
+      <p>Foto halaman buku undangan, AI akan membaca data tamu secara otomatis</p>
+
+      <div class="tips-box">
+        <div class="tip-title">Tips foto yang baik:</div>
+        <div class="tip">📸 Cahaya cukup, tidak gelap</div>
+        <div class="tip">📐 Foto tegak lurus, tidak miring</div>
+        <div class="tip">🔍 Tulisan terlihat jelas dan fokus</div>
+        <div class="tip">📄 1 halaman per foto</div>
+      </div>
+
+      <div class="idle-buttons">
+        <ion-button expand="block" color="success" size="large" (click)="openCamera()">
+          <ion-icon name="camera" slot="start"></ion-icon>
+          Ambil Foto
+        </ion-button>
+        <ion-button expand="block" fill="outline" color="success" (click)="openGallery()">
+          <ion-icon name="images-outline" slot="start"></ion-icon>
+          Pilih dari Galeri
+        </ion-button>
+      </div>
+    </div>
+  }
+
+  <!-- STATE: PREVIEW -->
+  @if (state === 'preview') {
+    <div class="preview-screen">
+      <div class="preview-label">Hasil Foto</div>
+      <div class="preview-img-wrap">
+        <img [src]="imagePreview" class="preview-img" alt="Foto buku">
+      </div>
+      <div class="preview-actions">
+        <ion-button expand="block" color="success" size="large" (click)="startScan()">
+          <ion-icon name="scan-outline" slot="start"></ion-icon>
+          Proses dengan AI
+        </ion-button>
+        <ion-button expand="block" fill="outline" color="medium" (click)="reset()">
+          Ambil Ulang
+        </ion-button>
+      </div>
+    </div>
+  }
+
+  <!-- STATE: SCANNING -->
+  @if (state === 'scanning') {
+    <div class="scanning-screen">
+      <div class="scanning-anim">
+        <div class="scan-ring"></div>
+        <div class="scan-img-wrap">
+          <img [src]="imagePreview" class="scan-img" alt="">
+          <div class="scan-line"></div>
+        </div>
+      </div>
+      <ion-spinner name="crescent" color="success"></ion-spinner>
+      <h3>Membaca data tamu...</h3>
+      <p>AI sedang menganalisis tulisan di foto</p>
+    </div>
+  }
+
+  <!-- STATE: RESULT -->
+  @if (state === 'result') {
+    <div class="result-screen">
+      <div class="result-header">
+        <div class="result-count">
+          <ion-icon name="checkmark-circle" color="success"></ion-icon>
+          <span><strong>{{ results.length }}</strong> tamu terdeteksi</span>
+        </div>
+        <div class="result-preview-thumb" *ngIf="imagePreview">
+          <img [src]="imagePreview" alt="">
+        </div>
+      </div>
+
+      <div class="select-all-row">
+        <ion-item lines="none" class="select-all-item">
+          <ion-checkbox
+            slot="start"
+            [checked]="allSelected"
+            (ionChange)="toggleAll($event.detail.checked)"
+            color="success">
+          </ion-checkbox>
+          <ion-label>Pilih semua</ion-label>
+          <ion-badge slot="end" color="success">{{ selectedCount }} dipilih</ion-badge>
+        </ion-item>
+      </div>
+
+      <ion-list lines="none" class="result-list">
+        @for (tamu of results; track $index) {
+          <ion-item class="result-item" [class.invalid]="!tamu.valid" [class.deselected]="!tamu.selected">
+            <ion-checkbox
+              slot="start"
+              [(ngModel)]="tamu.selected"
+              [disabled]="!tamu.valid"
+              color="success">
+            </ion-checkbox>
+            <ion-label>
+              <div class="result-nama">{{ tamu.nama || '(Nama tidak terbaca)' }}</div>
+              <div class="result-badges">
+                @if (tamu.beras) {
+                  <span class="chip-beras">🌾 {{ formatBeras(tamu.beras) }}</span>
+                }
+                @if (tamu.uang) {
+                  <span class="chip-uang">💵 {{ formatUang(tamu.uang) }}</span>
+                }
+                @if (tamu.alamat) {
+                  <span class="chip-alamat">📍 {{ tamu.alamat }}</span>
+                }
+              </div>
+            </ion-label>
+            @if (!tamu.valid) {
+              <ion-note slot="end" color="danger">
+                <ion-icon name="alert-circle-outline"></ion-icon>
+              </ion-note>
+            }
+          </ion-item>
+        }
+      </ion-list>
+
+      <div class="result-note">
+        <ion-icon name="alert-circle-outline" color="warning"></ion-icon>
+        <span>Periksa kembali data sebelum menyimpan. Anda bisa edit setelah disimpan.</span>
+      </div>
+    </div>
+  }
+
+  <!-- STATE: ERROR -->
+  @if (state === 'error') {
+    <div class="error-screen">
+      <div class="error-icon">😕</div>
+      <h3>Gagal Membaca</h3>
+      <p>{{ errorMsg }}</p>
+      @if (imagePreview) {
+        <img [src]="imagePreview" class="error-preview" alt="">
+      }
+      <div class="error-actions">
+        <ion-button expand="block" color="success" (click)="startScan()">
+          <ion-icon name="refresh-outline" slot="start"></ion-icon>
+          Coba Lagi
+        </ion-button>
+        <ion-button expand="block" fill="outline" color="medium" (click)="reset()">
+          Ambil Foto Baru
+        </ion-button>
+      </div>
+    </div>
+  }
+
+</ion-content>
+
+<!-- Footer Save Button -->
+@if (state === 'result') {
+  <ion-footer class="ion-no-border">
+    <ion-toolbar>
+      <div class="footer-btn-wrap">
+        <ion-button
+          expand="block"
+          color="success"
+          size="large"
+          [disabled]="selectedCount === 0"
+          (click)="simpanDipilih()"
+          class="btn-save">
+          <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
+          Simpan {{ selectedCount }} Tamu
+        </ion-button>
+      </div>
+    </ion-toolbar>
+  </ion-footer>
+}

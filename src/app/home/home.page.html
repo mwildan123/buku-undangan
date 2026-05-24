@@ -1,0 +1,137 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="success">
+    <ion-title>
+      <div class="toolbar-title">
+        <span class="title-icon">📖</span>
+        <span>Buku Undangan</span>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" color="light" (click)="goScan()" title="Scan Buku">
+        <ion-icon name="scan-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <!-- Stats Cards -->
+  <div class="stats-container">
+    <div class="stat-card stat-tamu">
+      <div class="stat-icon">👥</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ stats.totalTamu }}</div>
+        <div class="stat-label">Total Tamu</div>
+      </div>
+    </div>
+    <div class="stat-card stat-beras">
+      <div class="stat-icon">🌾</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ stats.totalBeras }} kg</div>
+        <div class="stat-label">Total Beras</div>
+      </div>
+    </div>
+    <div class="stat-card stat-uang">
+      <div class="stat-icon">💵</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ formatUangShort(stats.totalUang) }}</div>
+        <div class="stat-label">Total Uang</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scan Banner -->
+  <div class="scan-banner" (click)="goScan()">
+    <div class="scan-banner-left">
+      <span class="scan-emoji">📸</span>
+      <div>
+        <div class="scan-title">Scan Buku Catatan</div>
+        <div class="scan-sub">Foto halaman buku → tambah otomatis dengan AI</div>
+      </div>
+    </div>
+    <ion-icon name="chevron-forward-outline" color="success"></ion-icon>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-container">
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearch($event)"
+      placeholder="Cari nama atau alamat..."
+      show-clear-button="focus"
+      animated="true">
+    </ion-searchbar>
+  </div>
+
+  <!-- List Header -->
+  @if (allTamu.length > 0) {
+    <div class="list-header">
+      <ion-text color="medium">
+        <small>{{ filteredTamu.length }} dari {{ allTamu.length }} tamu</small>
+      </ion-text>
+    </div>
+  }
+
+  <!-- Tamu List -->
+  @if (filteredTamu.length > 0) {
+    <ion-list lines="none" class="tamu-list">
+      @for (tamu of filteredTamu; track tamu.id) {
+        <ion-item-sliding #sliding>
+          <ion-item class="tamu-item" detail="false" button (click)="editTamu(tamu, sliding)">
+            <div class="avatar-circle" slot="start">
+              {{ getInitials(tamu.nama) }}
+            </div>
+            <ion-label>
+              <h2 class="tamu-nama">{{ tamu.nama }}</h2>
+              @if (tamu.alamat) {
+                <p class="tamu-alamat">
+                  <ion-icon name="location" class="inline-icon"></ion-icon>
+                  {{ tamu.alamat }}
+                </p>
+              }
+              <div class="badge-row">
+                @if (tamu.beras) {
+                  <span class="chip-beras">🌾 {{ formatBeras(tamu.beras) }}</span>
+                }
+                @if (tamu.uang) {
+                  <span class="chip-uang">💵 {{ formatUang(tamu.uang) }}</span>
+                }
+              </div>
+            </ion-label>
+            <ion-icon name="chevron-forward-outline" slot="end" class="chevron-icon" color="medium"></ion-icon>
+          </ion-item>
+
+          <ion-item-options side="start">
+            <ion-item-option color="warning" (click)="editTamu(tamu, sliding)">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+
+          <ion-item-options side="end">
+            <ion-item-option color="danger" (click)="hapusTamu(tamu, sliding)">
+              <ion-icon slot="icon-only" name="trash"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
+
+  <!-- Empty State -->
+  @if (filteredTamu.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">{{ searchQuery ? '🔍' : '📝' }}</div>
+      <h3>{{ searchQuery ? 'Tidak Ada Hasil' : 'Belum Ada Data' }}</h3>
+      <p>{{ searchQuery ? 'Coba kata kunci lain' : 'Tekan tombol + atau scan buku untuk memulai' }}</p>
+    </div>
+  }
+
+  <!-- FAB -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button color="success" (click)="tambahTamu()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

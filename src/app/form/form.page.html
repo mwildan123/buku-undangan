@@ -1,0 +1,94 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="success">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/" color="light"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isEdit ? 'Edit Tamu' : 'Tambah Tamu' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" color="light" (click)="simpan()">
+        <ion-icon name="save" slot="start"></ion-icon>
+        Simpan
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <div class="form-hero">
+    <div class="form-avatar">{{ model.nama ? (getInitials(model.nama)) : '?' }}</div>
+    <p class="form-subtitle">{{ isEdit ? 'Ubah data tamu undangan' : 'Catat data tamu baru' }}</p>
+  </div>
+
+  <div class="form-body">
+
+    <!-- Nama -->
+    <div class="field-group">
+      <div class="field-label">
+        <span class="field-icon">👤</span>
+        <span>Nama Lengkap <span class="required">*</span></span>
+      </div>
+      <ion-item class="field-item" [class.error]="submitted && !model.nama">
+        <ion-input
+          [(ngModel)]="model.nama"
+          placeholder="Masukkan nama tamu"
+          autocomplete="off"
+          clearInput="true">
+        </ion-input>
+      </ion-item>
+      @if (submitted && !model.nama) {
+        <ion-note color="danger">Nama wajib diisi</ion-note>
+      }
+    </div>
+
+    <!-- Beras & Uang -->
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">
+          <span class="field-icon">🌾</span>
+          <span>Beras (kg)</span>
+        </div>
+        <ion-item class="field-item">
+          <ion-input [(ngModel)]="model.beras" type="number" min="0" step="0.5" placeholder="0"></ion-input>
+        </ion-item>
+      </div>
+      <div class="field-group">
+        <div class="field-label">
+          <span class="field-icon">💵</span>
+          <span>Uang (Rp)</span>
+        </div>
+        <ion-item class="field-item">
+          <ion-input [(ngModel)]="model.uang" type="number" min="0" step="10000" placeholder="0"></ion-input>
+        </ion-item>
+      </div>
+    </div>
+
+    <!-- Alamat -->
+    <div class="field-group">
+      <div class="field-label">
+        <span class="field-icon">📍</span>
+        <span>Alamat</span>
+      </div>
+      <ion-item class="field-item textarea-item">
+        <ion-textarea
+          [(ngModel)]="model.alamat"
+          placeholder="Desa / RT-RW / Kecamatan..."
+          rows="3"
+          autoGrow="true">
+        </ion-textarea>
+      </ion-item>
+    </div>
+
+    <!-- Buttons -->
+    <div class="action-buttons">
+      <ion-button expand="block" color="success" size="large" (click)="simpan()" class="btn-save">
+        <ion-icon name="save" slot="start"></ion-icon>
+        {{ isEdit ? 'Perbarui Data' : 'Simpan Tamu' }}
+      </ion-button>
+      <ion-button expand="block" fill="outline" color="medium" (click)="batal()">
+        Batal
+      </ion-button>
+    </div>
+
+  </div>
+</ion-content>

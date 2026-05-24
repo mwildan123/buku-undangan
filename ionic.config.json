@@ -1,0 +1,7 @@
+{
+    "name": "buku-undangan",
+    "integrations": {
+        "angular": {}
+    },
+    "type": "angular"
+}
