@@ -6,7 +6,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons,
   IonBackButton, IonButton, IonIcon, IonList, IonItem,
   IonLabel, IonCheckbox, IonNote, IonBadge, IonSpinner,
-  IonCard, IonCardContent, IonText, IonFooter, IonToolbar as IonFooterToolbar,
+  IonCard, IonCardContent, IonText, IonFooter,
   ToastController, IonProgressBar
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -42,6 +42,9 @@ type ScanState = 'idle' | 'preview' | 'scanning' | 'result' | 'error';
   styleUrls: ['./scan.page.scss'],
 })
 export class ScanPage {
+  // BARIS 41: Menambahkan variabel penampung API Key Anthropic
+  private apiKey: string = 'AIzaSyAaTKwXYf4EeMQt-4beSGyNpl3BmgqAl5c';
+
   state: ScanState = 'idle';
   imagePreview: string | null = null;
   imageBase64: string | null = null;
@@ -140,9 +143,16 @@ Aturan:
 
     try {
       this.statusMsg = 'Membaca tulisan di foto...';
+      
+      // BARIS 136: Mengubah konfigurasi fetch untuk menyertakan API Key di Headers Anthropic
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-api-key': this.apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerously-allow-browser': 'true'
+        },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 2000,
